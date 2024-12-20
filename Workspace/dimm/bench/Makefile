@@ -7,6 +7,39 @@ DUT_FILES = ../svlog/CMD.sv \
 			../svlog/TimingFSM/*.sv \
 			../svlog/DIMM.sv
 
+# ----------------------------------------------------
+# QuestaSim
+# ----------------------------------------------------
+QUESTA_LIB_WORK = lib_BENCH
+QUESTA_VLOG_CFG = -svinputport=net
+questa_batchmode: questa_clean questa_libs questa_compile
+	vsim -voptargs="+acc" -batch -do "log -r /*; run -all; quit" -wlf waveform.wlf $(QUESTA_LIB_WORK).tb
+
+questa_gui: questa_clean questa_libs questa_compile
+	vsim -voptargs="+acc" +nowarn3116 -do "log -r /*" -wlf waveform.wlf $(QUESTA_LIB_WORK).tb
+
+questa_compile:
+	vlib ../libs/$(QUESTA_LIB_WORK)
+	vmap $(QUESTA_LIB_WORK) ../libs/$(QUESTA_LIB_WORK) 
+	vlog $(QUESTA_VLOG_CFG) -work $(QUESTA_LIB_WORK) $(DUT_FILES) $(PKG_FILES) $(TB).sv
+
+questa_libs:
+	mkdir -p ../libs/lib_BENCH
+
+questa_clean:
+	rm -rf modelsim.ini
+	rm -rf transcript
+	rm -rf vsim.wlf
+	rm -rf ../libs/
+
+# clean
+clean: cds_clean questa_clean
+
+
+
+
+
+
 run_cds: cds_batchmode
 run_questa: questa_batchmode 
 
@@ -33,31 +66,3 @@ cds_clean:
 	rm -rf xmsim*
 	rm -rf cov_work
 	rm -rf *.vcd
-
-# ----------------------------------------------------
-# QuestaSim
-# ----------------------------------------------------
-QUESTA_LIB_WORK = lib_BENCH
-QUESTA_VLOG_CFG = -svinputport=net
-questa_batchmode: questa_clean questa_libs questa_compile
-	vsim +nowarn3116 -batch -do "run -all" $(QUESTA_LIB_WORK).tb
-
-questa_gui: questa_clean questa_libs questa_compile
-	vsim
-
-questa_compile:
-	vlib ../libs/$(QUESTA_LIB_WORK)
-	vmap $(QUESTA_LIB_WORK) ../libs/$(QUESTA_LIB_WORK) 
-	vlog $(QUESTA_VLOG_CFG) -work $(QUESTA_LIB_WORK) $(DUT_FILES) $(PKG_FILES) $(TB).sv
-
-questa_libs:
-	mkdir -p ../libs/lib_BENCH
-
-questa_clean:
-	rm -rf modelsim.ini
-	rm -rf transcript
-	rm -rf vsim.wlf
-	rm -rf ../libs/
-
-# clean
-clean: cds_clean questa_clean

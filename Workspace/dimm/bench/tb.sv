@@ -119,9 +119,12 @@ module tb();
     always #(tCK*0.5) ck2x = ~ck2x;
     
     integer i, j; // loop variable
-    
+
     initial
     begin
+        $dumpfile("waveform.vcd");  // Specify the name of the VCD file
+        $dumpvars(0, tb);  // Dump all variables for the top module
+
         // initialize all inputs
         reset_n = 0; // DRAM is active only when this signal is HIGH
         ck_tp = 1;
